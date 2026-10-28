@@ -1,0 +1,11 @@
+ ______________________
+|                      |
+|   PUERTA BLOQUEADA   |
+|   teclado de 3       |
+|   digitos:           |
+|   [ _ _ _ ]          |
+|                      |
+|   escribe el codigo  |
+|   y pulsa ENTER      |
+|                      |
+|______________________|
