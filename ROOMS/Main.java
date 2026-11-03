@@ -134,6 +134,15 @@ public class Main {
      */
     public static int numeroPuerta3;
 
+    /** Cuantos movimientos da el modo CONTRARRELOJ en cada habitacion. */
+    public static final int MOVIMIENTOS_POR_HABITACION = 100;
+
+    /**
+     * Los movimientos que le quedan al jugador en el modo CONTRARRELOJ.
+     * Se recargan en cargarMundo() al entrar a cada habitacion.
+     */
+    public static int movimientosRestantes;
+
     /**
      * El ciclo de vida del juego: configuracion inicial (los placeholders),
      * carga de la habitacion 1 y el ciclo principal de comandos.
@@ -146,12 +155,18 @@ public class Main {
         tipoJuego = seleccionarTipoJuego();
         configurarJugador();
 
-        if (!cargarMundo(1)) {
+        // En HABITACION UNICA seleccionarTipoJuego() ya cambio habitacionActual;
+        // en los otros modos sigue en 1.
+        if (!cargarMundo(habitacionActual)) {
             return; // sin datos no hay juego
+        }
+        if (habitacionActual > 1) {
+            mensaje = mensajeEntrada();
         }
         Sonido.musicaFondo("musica/ambiente.mid");
 
         boolean escapo = false;
+        boolean sinMovimientos = false; // solo pasa en CONTRARRELOJ
         boolean jugando = true;
         while (jugando) {
             dibujarPantalla(panelEstado());
@@ -173,11 +188,19 @@ public class Main {
                 escapo = mover(comando);
                 if (escapo) {
                     jugando = false;
+                } else if (tipoJuego == 3 && movimientosRestantes <= 0) {
+                    sinMovimientos = true;
+                    jugando = false;
                 }
             }
         }
 
-        if (!escapo) {
+        if (sinMovimientos) {
+            Sonido.error();
+            System.out.println();
+            System.out.println(" Se acabaron tus movimientos, " + nombreJugador
+                    + ". La habitacion gana esta vez...");
+        } else if (!escapo) {
             System.out.println();
             System.out.println(" Te rindes. La habitacion gana esta vez...");
         }
@@ -200,12 +223,40 @@ public class Main {
      * 3 = CONTRARRELOJ (historia con movimientos limitados). El modo elegido
      * se guarda en tipoJuego y el resto del motor debe respetarlo.</p>
      *
-     * @return el modo elegido por el jugador (por ahora siempre 1).
+     * @return el modo elegido: 1 = historia, 2 = habitacion unica, 3 = contrarreloj.
      */
     public static int seleccionarTipoJuego() {
-        // TODO equipo: menu de modos de juego + lectura validada.
-        System.out.println(" Modo de juego: HISTORIA (TODO equipo: el menu de modos)");
-        return 1;
+        // Primero se explica cada modo y luego se lee validado.
+        System.out.println(" Elige el modo de juego:");
+        System.out.println("   1. HISTORIA         - las 3 habitaciones, una tras otra.");
+        System.out.println("   2. HABITACION UNICA - eliges una habitacion y escapas solo de ella.");
+        System.out.println("   3. CONTRARRELOJ     - la historia, pero solo tienes "
+                + MOVIMIENTOS_POR_HABITACION + " movimientos");
+        System.out.println("                         en cada habitacion.");
+        int modo = leerTresOpciones();
+
+        // En HABITACION UNICA tambien se elige el cuarto: main() carga
+        // habitacionActual, asi que basta con cambiarlo aqui.
+        if (modo == 2) {
+            System.out.println();
+            System.out.println(" Que habitacion quieres jugar?");
+            habitacionActual = leerTresOpciones();
+        }
+        System.out.println();
+        System.out.println(" Modo de juego: " + nombreModo(modo) + ".");
+        return modo;
+    }
+
+    /**
+     * El nombre en palabras de un modo de juego, para el panel y los mensajes.
+     *
+     * @param modo el tipo de juego (1, 2 o 3).
+     * @return HISTORIA, HABITACION UNICA o CONTRARRELOJ.
+     */
+    public static String nombreModo(int modo) {
+        if (modo == 1) return "HISTORIA";
+        if (modo == 2) return "HABITACION UNICA";
+        return "CONTRARRELOJ";
     }
 
     /**
@@ -229,7 +280,7 @@ public class Main {
 
         // La dificultad: primero se explica y luego se lee validada.
         mostrarDificultades();
-        dificultad = leerDificultad();
+        dificultad = leerTresOpciones();
         System.out.println();
         System.out.println(" Bienvenido, " + nombreJugador + ". Dificultad: "
                 + nombreDificultad(dificultad) + ".");
@@ -252,12 +303,13 @@ public class Main {
     }
 
     /**
-     * Lee la dificultad validando la entrada (mismo estilo que leerOpcion()):
-     * repite la pregunta hasta recibir 1, 2 o 3, asi nunca rompe el programa.
+     * Lee una opcion de 1 a 3 validando la entrada (mismo estilo que
+     * leerOpcion()): repite la pregunta hasta recibir 1, 2 o 3, asi nunca
+     * rompe el programa. La usan el modo, la habitacion y la dificultad.
      *
-     * @return la dificultad elegida: 1, 2 o 3.
+     * @return la opcion elegida: 1, 2 o 3.
      */
-    public static int leerDificultad() {
+    public static int leerTresOpciones() {
         int opcion = -1; // -1 significa "todavia no hay una opcion valida"
         do {
             System.out.print(" > Elige (1, 2 o 3): ");
@@ -414,6 +466,7 @@ public class Main {
         calcularAnchoMapa();
         buscarInicio();
         mirados = ""; // cada habitacion cuenta sus propios objetos mirados
+        movimientosRestantes = MOVIMIENTOS_POR_HABITACION; // solo cuenta en CONTRARRELOJ
 
         // El numero del cofre: decena 1-9 y unidad par distinta de cero,
         // asi la MITAD es exacta y el numero AL REVES no empieza por cero.
@@ -512,20 +565,26 @@ public class Main {
     /** El panel cuando no hay objeto cerca: progreso, inventario y comandos. */
     public static String[] panelEstado() {
         int lineasInventario = Math.max(1, totalInventario);
-        // 6 lineas fijas (progreso, mirados, jugador, dificultad, vacio,
-        // titulo del inventario) + las lineas que ocupe el inventario.
-        String[] contenido = new String[6 + lineasInventario];
+        // 7 lineas fijas (progreso, mirados, jugador, dificultad, modo,
+        // vacio, titulo del inventario) + las lineas que ocupe el inventario.
+        String[] contenido = new String[7 + lineasInventario];
         contenido[0] = "Habitacion " + habitacionActual + " de " + TOTAL_HABITACIONES;
         contenido[1] = "Objetos mirados: " + mirados.length() + " de " + objetos.length;
         contenido[2] = "Jugador: " + nombreJugador; // enmarcar() recorta si es largo
         contenido[3] = "Dificultad: " + nombreDificultad(dificultad);
-        contenido[4] = "";
-        contenido[5] = "Inventario:";
+        // En CONTRARRELOJ lo importante es cuanto queda; en los otros, el modo.
+        if (tipoJuego == 3) {
+            contenido[4] = "Movimientos: " + movimientosRestantes;
+        } else {
+            contenido[4] = "Modo: " + nombreModo(tipoJuego);
+        }
+        contenido[5] = "";
+        contenido[6] = "Inventario:";
         if (totalInventario == 0) {
-            contenido[6] = "  (vacio)";
+            contenido[7] = "  (vacio)";
         } else {
             for (int i = 0; i < totalInventario; i++) {
-                contenido[6 + i] = "  - " + inventario[i];
+                contenido[7 + i] = "  - " + inventario[i];
             }
         }
 
@@ -568,6 +627,12 @@ public class Main {
         } else {
             mensaje = "No entiendo '" + comando + "'. Usa W A S D (H = pista, Q = rendirse).";
             return false;
+        }
+
+        // En CONTRARRELOJ cada tecla de movimiento gasta uno, incluso si
+        // choca: asi el jugador debe pensar antes de caminar.
+        if (tipoJuego == 3) {
+            movimientosRestantes--;
         }
 
         char casilla = casillaZona(nuevaFila, nuevaColumna);
@@ -995,7 +1060,8 @@ public class Main {
         String intento = lector.nextLine().trim();
         if (intento.equals(clave)) {
             Sonido.exito();
-            if (habitacionActual >= TOTAL_HABITACIONES) {
+            // En HABITACION UNICA cualquier puerta es la ultima.
+            if (habitacionActual >= TOTAL_HABITACIONES || tipoJuego == 2) {
                 mostrarVictoria();
                 return true;
             }
@@ -1018,8 +1084,17 @@ public class Main {
         System.out.println();
         imprimirArte("arte/victoria.txt");
         System.out.println();
-        System.out.println(centrar("Escapaste de las " + TOTAL_HABITACIONES
-                + " habitaciones. Eres libre, " + nombreJugador + ".", ANCHO_ESCENA));
+        if (tipoJuego == 2) {
+            System.out.println(centrar("Escapaste de la habitacion " + habitacionActual
+                    + ". Eres libre, " + nombreJugador + ".", ANCHO_ESCENA));
+        } else {
+            System.out.println(centrar("Escapaste de las " + TOTAL_HABITACIONES
+                    + " habitaciones. Eres libre, " + nombreJugador + ".", ANCHO_ESCENA));
+        }
+        if (tipoJuego == 3) {
+            System.out.println(centrar("Te sobraron " + movimientosRestantes
+                    + " movimientos en la ultima habitacion.", ANCHO_ESCENA));
+        }
         System.out.println();
         System.out.println(bordeEscena());
         Sonido.detenerMusica();
