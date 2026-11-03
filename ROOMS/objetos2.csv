@@ -2,4 +2,4 @@ simbolo,nombre,archivo,detalle
 B,una cama bien tendida,cama,Parece como si alguien hubiera estado aqui... levantas la almohada y encuentras una pelota con un numero escrito
 H,una chimenea,chimenea,Cuidado! La chimenea esta encendida y hay brasas calientes. No puedes tocarla... pero parece que hay algo dentro.
 M,una mesa,mesa,Parece que alguien dejo un balde con agua encima de la mesa...
-P,la puerta de salida,puerta2,Hay una puerta que pide un codigo de 3 digitos para salir | tiene algo escrito
+P,la puerta de salida,puerta2,Hay una puerta que pide un codigo de 3 digitos para salir. Tiene algo escrito.
