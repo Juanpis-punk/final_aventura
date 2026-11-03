@@ -117,6 +117,24 @@ public class Main {
     public static String clave;
 
     /**
+     * El numero de la pelota escondida bajo la almohada de la cama
+     * (habitacion 2). Un digito del 1 al 9, sorteado en cada partida.
+     */
+    public static int pelotaCama;
+
+    /**
+     * El numero de la pelota escondida dentro de la chimenea (habitacion 2).
+     * Un digito del 1 al 9, sorteado en cada partida. Va PRIMERO en la clave.
+     */
+    public static int pelotaChimenea;
+
+    /**
+     * El numero que pide la puerta final (habitacion 3) en dificultad 2 y 3.
+     * Se sortea del 1 al 5 en cada partida.
+     */
+    public static int numeroPuerta3;
+
+    /**
      * El ciclo de vida del juego: configuracion inicial (los placeholders),
      * carga de la habitacion 1 y el ciclo principal de comandos.
      */
@@ -201,9 +219,70 @@ public class Main {
      * aqui el estado inicial del sonido (M/E).</p>
      */
     public static void configurarJugador() {
-        // TODO equipo: pedir nombre, elegir dificultad y aplicarla.
-        System.out.println(" Jugador: " + nombreJugador + " | Dificultad: " + dificultad
-                + " (TODO equipo: la terminal inicial)");
+        // El nombre: si el jugador solo presiona ENTER se conserva "aventurero",
+        // asi nombreJugador nunca queda vacio en los mensajes.
+        System.out.print(" Como te llamas? (ENTER = aventurero): ");
+        String nombre = lector.nextLine().trim();
+        if (!nombre.isEmpty()) {
+            nombreJugador = nombre;
+        }
+
+        // La dificultad: primero se explica y luego se lee validada.
+        mostrarDificultades();
+        dificultad = leerDificultad();
+        System.out.println();
+        System.out.println(" Bienvenido, " + nombreJugador + ". Dificultad: "
+                + nombreDificultad(dificultad) + ".");
+        System.out.println();
+    }
+
+    /**
+     * Explica en pantalla que cambia cada dificultad, para que el jugador
+     * elija sabiendo lo que le espera. La habitacion 1 es igual en todas.
+     */
+    public static void mostrarDificultades() {
+        System.out.println();
+        System.out.println(" Elige la dificultad (afecta las habitaciones 2 y 3):");
+        System.out.println("   1. FACIL   - la puerta 2 trae una pista clara y la puerta 3");
+        System.out.println("                se abre solo con la llave.");
+        System.out.println("   2. NORMAL  - la pista de la puerta 2 esta corrupta y la");
+        System.out.println("                puerta 3 tambien pide un numero secreto.");
+        System.out.println("   3. DIFICIL - igual que NORMAL, pero con los controles");
+        System.out.println("                invertidos en las habitaciones 2 y 3.");
+    }
+
+    /**
+     * Lee la dificultad validando la entrada (mismo estilo que leerOpcion()):
+     * repite la pregunta hasta recibir 1, 2 o 3, asi nunca rompe el programa.
+     *
+     * @return la dificultad elegida: 1, 2 o 3.
+     */
+    public static int leerDificultad() {
+        int opcion = -1; // -1 significa "todavia no hay una opcion valida"
+        do {
+            System.out.print(" > Elige (1, 2 o 3): ");
+            String entrada = lector.nextLine().trim();
+            // Se compara como texto ANTES de convertir: asi parseInt nunca
+            // recibe letras ni vacios y no puede lanzar una excepcion.
+            if (entrada.equals("1") || entrada.equals("2") || entrada.equals("3")) {
+                opcion = Integer.parseInt(entrada);
+            } else {
+                System.out.println(" Entrada invalida. Intenta de nuevo.");
+            }
+        } while (opcion == -1);
+        return opcion;
+    }
+
+    /**
+     * El nombre en palabras de una dificultad, para el panel y los mensajes.
+     *
+     * @param nivel la dificultad (1, 2 o 3).
+     * @return FACIL, NORMAL o DIFICIL.
+     */
+    public static String nombreDificultad(int nivel) {
+        if (nivel == 1) return "FACIL";
+        if (nivel == 2) return "NORMAL";
+        return "DIFICIL";
     }
 
     /**
@@ -239,20 +318,55 @@ public class Main {
      *         nueva habitacion.
      */
     public static boolean siguienteHabitacion() {
-        // TODO equipo: habitacionActual++, cargarMundo(...), transicion y return false.
+        // Se guarda de donde viene el jugador ANTES de sumar, para la transicion.
+        int anterior = habitacionActual;
+        habitacionActual++;
+
+        // cargarMundo() reemplaza las matrices, los objetos y sortea el puzzle
+        // nuevo. El inventario NO se toca: lo que el jugador carga viaja con el.
+        if (!cargarMundo(habitacionActual)) {
+            System.out.println(" No se pudo cargar la habitacion " + habitacionActual
+                    + ". Revisen sus archivos.");
+            return true; // sin datos no se puede seguir jugando
+        }
+
+        mostrarTransicion(anterior, habitacionActual);
+        mensaje = mensajeEntrada();
+        return false; // false = el ciclo de main sigue en la habitacion nueva
+    }
+
+    /**
+     * La pantalla de transicion entre habitaciones, con el mismo estilo de
+     * las escenas (bordes y texto centrado) y una pausa con ENTER.
+     *
+     * @param desde la habitacion de la que escapo el jugador.
+     * @param hacia la habitacion a la que entra.
+     */
+    public static void mostrarTransicion(int desde, int hacia) {
         System.out.println();
         System.out.println(bordeEscena());
         System.out.println();
-        System.out.println(centrar("Escapaste de la habitacion " + habitacionActual + "...", ANCHO_ESCENA));
-        System.out.println(centrar("pero la puerta da a un pasillo EN CONSTRUCCION.", ANCHO_ESCENA));
+        System.out.println(centrar("Escapaste de la habitacion " + desde
+                + "... entras a la habitacion " + hacia, ANCHO_ESCENA));
         System.out.println();
-        System.out.println(centrar("Equipo: las habitaciones " + (habitacionActual + 1)
-                + " y " + TOTAL_HABITACIONES + " son SU mision.", ANCHO_ESCENA));
+        System.out.println(centrar("La puerta se cierra detras de ti, " + nombreJugador + ".", ANCHO_ESCENA));
         System.out.println();
         System.out.println(bordeEscena());
-        System.out.print(centrar("[ ENTER para salir ]", ANCHO_ESCENA));
+        System.out.print(centrar("[ ENTER para continuar ]", ANCHO_ESCENA));
         lector.nextLine();
-        return true; // provisional: el juego termina en la habitacion 1
+    }
+
+    /**
+     * El primer mensaje bajo el mapa al entrar a una habitacion nueva.
+     * En DIFICIL avisa que los controles quedaron invertidos.
+     *
+     * @return el texto para la variable mensaje.
+     */
+    public static String mensajeEntrada() {
+        if (dificultad == 3) {
+            return "Estas mareado y los controles se han invertido!";
+        }
+        return "Entras a la habitacion " + habitacionActual + ", " + nombreJugador + ". Explora.";
     }
 
     /**
@@ -311,6 +425,22 @@ public class Main {
         // La operacion de esta habitacion y su clave.
         operacionElegida = (int) (Math.random() * operaciones.length);
         clave = calcularClave(operacionElegida, numeroCofre);
+
+        // Los puzzles propios van DESPUES de la linea anterior: asi su clave
+        // reemplaza la del cofre y no queda sobrescrita.
+        if (numero == 2) {
+            // Dos digitos del 1 al 9 (nunca 0, para que la clave tenga 3 cifras).
+            pelotaCama = 1 + (int) (Math.random() * 9);
+            pelotaChimenea = 1 + (int) (Math.random() * 9);
+            // El grabado cuenta el orden: primero el fuego (chimenea), luego
+            // dormir (cama) y al final "suspire DOS veces" (el 2).
+            clave = "" + pelotaChimenea + pelotaCama + "2";
+        }
+        if (numero == 3) {
+            // Un numero del 1 al 5; solo se pide en NORMAL y DIFICIL.
+            numeroPuerta3 = 1 + (int) (Math.random() * 5);
+            clave = "" + numeroPuerta3;
+        }
         return true;
     }
 
@@ -382,19 +512,22 @@ public class Main {
     /** El panel cuando no hay objeto cerca: progreso, inventario y comandos. */
     public static String[] panelEstado() {
         int lineasInventario = Math.max(1, totalInventario);
-        String[] contenido = new String[4 + lineasInventario];
+        // 6 lineas fijas (progreso, mirados, jugador, dificultad, vacio,
+        // titulo del inventario) + las lineas que ocupe el inventario.
+        String[] contenido = new String[6 + lineasInventario];
         contenido[0] = "Habitacion " + habitacionActual + " de " + TOTAL_HABITACIONES;
         contenido[1] = "Objetos mirados: " + mirados.length() + " de " + objetos.length;
-        contenido[2] = "";
-        contenido[3] = "Inventario:";
+        contenido[2] = "Jugador: " + nombreJugador; // enmarcar() recorta si es largo
+        contenido[3] = "Dificultad: " + nombreDificultad(dificultad);
+        contenido[4] = "";
+        contenido[5] = "Inventario:";
         if (totalInventario == 0) {
-            contenido[4] = "  (vacio)";
+            contenido[6] = "  (vacio)";
         } else {
             for (int i = 0; i < totalInventario; i++) {
-                contenido[4 + i] = "  - " + inventario[i];
+                contenido[6 + i] = "  - " + inventario[i];
             }
         }
-        // TODO equipo: mostrar aqui el nombre del jugador y la dificultad.
 
         String[] caja = enmarcar(contenido);
         String[] panel = new String[caja.length + 4];
@@ -416,6 +549,12 @@ public class Main {
      * @return true solo si el jugador escapo y el juego termina.
      */
     public static boolean mover(String comando) {
+        // En DIFICIL (solo habitaciones 2 y 3) la tecla se traduce ANTES de
+        // procesarla: asi todo lo de abajo, incluido el mensaje "Caminas
+        // hacia...", usa la direccion REAL en que se mueve el jugador.
+        if (dificultad == 3 && habitacionActual >= 2) {
+            comando = invertirControles(comando);
+        }
         int nuevaFila = fila;
         int nuevaColumna = columna;
         if (comando.equals("W")) {
@@ -443,6 +582,22 @@ public class Main {
             mensaje = "Algo solido te bloquea el paso.";
         }
         return false;
+    }
+
+    /**
+     * Invierte una tecla de movimiento (el jugador esta mareado):
+     * W y S se intercambian, A y D tambien. Cualquier otra tecla queda
+     * igual, para que mover() la rechace con su mensaje normal.
+     *
+     * @param comando la tecla que escribio el jugador, en mayuscula.
+     * @return la tecla que realmente se va a procesar.
+     */
+    public static String invertirControles(String comando) {
+        if (comando.equals("W")) return "S";
+        if (comando.equals("S")) return "W";
+        if (comando.equals("A")) return "D";
+        if (comando.equals("D")) return "A";
+        return comando;
     }
 
     /** La zona de una casilla; fuera de la matriz todo es solido. */
@@ -489,11 +644,40 @@ public class Main {
         }
 
         // COMPORTAMIENTOS ESPECIALES por objeto van aqui.
-        // TODO equipo: agreguen los else-if de SUS objetos especiales
-        //              (en las habitaciones 2 y 3 necesitaran varios).
+        // Cada condicion revisa TAMBIEN la habitacion: las letras se pueden
+        // repetir entre habitaciones y asi un comportamiento nunca se activa
+        // en el cuarto equivocado.
+
+        // ---- Habitacion 2: cama, mesa y chimenea ----
+        if (habitacionActual == 2 && simbolo == 'B') {
+            mirarCama(objeto);
+            return false;
+        }
+        if (habitacionActual == 2 && simbolo == 'M') {
+            mirarMesa(objeto);
+            return false;
+        }
+        if (habitacionActual == 2 && simbolo == 'H') {
+            mirarChimenea(objeto);
+            return false;
+        }
+
+        // ---- Habitacion 3: planta, armario y puerta final ----
+        // (el reloj 'R' no necesita codigo: usa la escena normal de abajo)
+        if (habitacionActual == 3 && simbolo == 'L') {
+            mirarPlanta(objeto);
+            return false;
+        }
+        if (habitacionActual == 3 && simbolo == 'W') {
+            mirarArmario(objeto);
+            return false;
+        }
+        if (habitacionActual == 3 && simbolo == 'P') {
+            return abrirPuertaFinal(objeto);
+        }
 
         // La alfombra entrega la llave al inventario la primera vez.
-        if (simbolo == 'A') {
+        if (habitacionActual == 1 && simbolo == 'A') {
             abrirEscena(objeto);
             recordarMirado(simbolo);
             if (!tieneObjeto("llave oxidada")) {
@@ -507,7 +691,7 @@ public class Main {
         }
 
         // El cofre exige la llave: sin ella no revela su numero.
-        if (simbolo == 'C') {
+        if (habitacionActual == 1 && simbolo == 'C') {
             if (!tieneObjeto("llave oxidada")) {
                 abrirEscena(objeto); // el cofre cerrado (arte y detalle del CSV)
                 Sonido.error();
@@ -525,7 +709,7 @@ public class Main {
         }
 
         // La nota revela la operacion sorteada en esta habitacion.
-        if (simbolo == 'N') {
+        if (habitacionActual == 1 && simbolo == 'N') {
             mostrarEscena(objeto[1], objeto[2],
                     objeto[3] + " Hoy la operacion es: " + operaciones[operacionElegida] + ".");
             esperarEnter();
@@ -541,6 +725,185 @@ public class Main {
         recordarMirado(simbolo);
         mensaje = "Miraste " + objeto[1] + ". Sigues frente al objeto.";
         return false;
+    }
+
+    /* ---------- Habitacion 2: los objetos especiales ---------- */
+
+    /**
+     * LA CAMA (molde: la alfombra). Bajo la almohada hay una pelota con un
+     * numero: la primera vez se guarda en el inventario; despues la escena
+     * solo le recuerda el numero al jugador.
+     *
+     * @param objeto la fila del CSV de la cama.
+     */
+    public static void mirarCama(String[] objeto) {
+        // Texto dinamico (como la nota): el detalle del CSV + el numero sorteado.
+        mostrarEscena(objeto[1], objeto[2],
+                objeto[3] + " La pelota tiene el numero " + pelotaCama + ".");
+        esperarEnter();
+        recordarMirado('B');
+        if (!tieneObjeto("pelota de la cama")) {
+            guardarObjeto("pelota de la cama");
+            Sonido.recoger();
+            mensaje = "Guardaste la PELOTA DE LA CAMA. Tiene el numero " + pelotaCama + ".";
+        } else {
+            // Ya la tiene: no se guarda dos veces, solo se recuerda el numero.
+            mensaje = "La pelota de la cama tiene el numero " + pelotaCama + ".";
+        }
+    }
+
+    /**
+     * LA MESA (molde: la alfombra). Entrega el balde con agua la primera vez;
+     * ese balde es lo que permite acercarse a la chimenea.
+     *
+     * @param objeto la fila del CSV de la mesa.
+     */
+    public static void mirarMesa(String[] objeto) {
+        abrirEscena(objeto);
+        recordarMirado('M');
+        if (!tieneObjeto("balde con agua")) {
+            guardarObjeto("balde con agua");
+            Sonido.recoger();
+            mensaje = "Guardaste el BALDE CON AGUA en tu inventario.";
+        } else {
+            mensaje = "Sobre la mesa ya no queda nada.";
+        }
+    }
+
+    /**
+     * LA CHIMENEA (molde: el cofre). Exige el balde con agua: sin el, el
+     * fuego no deja acercarse; con el, se apaga el fuego y aparece la
+     * segunda pelota con su numero.
+     *
+     * @param objeto la fila del CSV de la chimenea.
+     */
+    public static void mirarChimenea(String[] objeto) {
+        // Primero el caso "ya resuelto", para no repetir el premio.
+        if (tieneObjeto("pelota de la chimenea")) {
+            mostrarEscena(objeto[1], objeto[2], "El fuego ya esta apagado. Entre las cenizas"
+                    + " encontraste la pelota con el numero " + pelotaChimenea + ".");
+            esperarEnter();
+            mensaje = "La pelota de la chimenea tiene el numero " + pelotaChimenea + ".";
+            return;
+        }
+        if (!tieneObjeto("balde con agua")) {
+            abrirEscena(objeto); // la chimenea encendida (arte y detalle del CSV)
+            Sonido.error();
+            mensaje = "El fuego no te deja acercarte. Necesitas algo para apagarlo...";
+            return;
+        }
+        // Tiene el balde: se apaga el fuego y se entrega la pelota.
+        Sonido.exito();
+        mostrarEscena("la chimenea apagada", objeto[2], "Lanzas el agua del balde y el fuego"
+                + " se apaga con un siseo. Entre las cenizas encuentras una pelota con el numero "
+                + pelotaChimenea + ".");
+        esperarEnter();
+        recordarMirado('H');
+        guardarObjeto("pelota de la chimenea");
+        mensaje = "Guardaste la PELOTA DE LA CHIMENEA. Tiene el numero " + pelotaChimenea + ".";
+    }
+
+    /* ---------- Habitacion 3: los objetos especiales ---------- */
+
+    /**
+     * LA PLANTA (molde: la alfombra). Entre sus hojas esta la llave pequena;
+     * se guarda la primera vez. El reloj apunta hacia ella.
+     *
+     * @param objeto la fila del CSV de la planta.
+     */
+    public static void mirarPlanta(String[] objeto) {
+        abrirEscena(objeto);
+        recordarMirado('L');
+        if (!tieneObjeto("llave pequena")) {
+            guardarObjeto("llave pequena");
+            Sonido.recoger();
+            mensaje = "Guardaste la LLAVE PEQUENA en tu inventario.";
+        } else {
+            mensaje = "Entre las hojas ya no hay nada.";
+        }
+    }
+
+    /**
+     * EL ARMARIO (molde: el cofre). Exige la llave pequena; al abrirlo
+     * entrega la llave grande que necesita la puerta final.
+     *
+     * @param objeto la fila del CSV del armario.
+     */
+    public static void mirarArmario(String[] objeto) {
+        // Primero el caso "ya resuelto", para no entregar la llave dos veces.
+        if (tieneObjeto("llave grande")) {
+            mostrarEscena(objeto[1], objeto[2], "El armario esta vacio.");
+            esperarEnter();
+            mensaje = "El armario esta vacio.";
+            return;
+        }
+        if (!tieneObjeto("llave pequena")) {
+            abrirEscena(objeto); // el armario cerrado (arte y detalle del CSV)
+            Sonido.error();
+            mensaje = "El armario esta cerrado con llave. Una llave pequena lo abriria...";
+            return;
+        }
+        // Tiene la llave pequena: se abre y se entrega la llave grande.
+        Sonido.exito();
+        mostrarEscena("el armario abierto", objeto[2], "Usas la llave pequena y las puertas"
+                + " del armario se abren con un crujido. Dentro cuelga una LLAVE GRANDE.");
+        esperarEnter();
+        recordarMirado('W');
+        guardarObjeto("llave grande");
+        mensaje = "Guardaste la LLAVE GRANDE en tu inventario.";
+    }
+
+    /**
+     * LA PUERTA FINAL (habitacion 3). Sin la llave grande ni siquiera pide
+     * clave. Con la llave: en FACIL se abre de una vez (victoria); en NORMAL y
+     * DIFICIL ademas pide el numero secreto con la logica de abrirPuerta().
+     *
+     * @param objeto la fila del CSV de la puerta final.
+     * @return true si el jugador escapo y el juego termina.
+     */
+    public static boolean abrirPuertaFinal(String[] objeto) {
+        if (!tieneObjeto("llave grande")) {
+            abrirEscena(objeto);
+            recordarMirado('P');
+            Sonido.error();
+            mensaje = "La cerradura es enorme. Necesitas una LLAVE GRANDE para abrirla.";
+            return false;
+        }
+        if (dificultad == 1) {
+            recordarMirado('P');
+            Sonido.exito();
+            mostrarVictoria();
+            return true;
+        }
+        // NORMAL y DIFICIL: la llave no basta, la clave es numeroPuerta3 (1 a 5).
+        return abrirPuerta(objeto);
+    }
+
+    /**
+     * El texto que se muestra bajo el dibujo de la puerta (molde: la nota).
+     * En la habitacion 2 agrega el grabado con la pista, que depende de la
+     * dificultad; en la 3 avisa que, ademas de la llave, se pide un numero;
+     * en la habitacion 1 devuelve el detalle del CSV tal cual.
+     *
+     * @param objeto la fila del CSV de la puerta.
+     * @return el texto de la escena de la puerta.
+     */
+    public static String textoPuerta(String[] objeto) {
+        if (habitacionActual == 3) {
+            // Solo se llega aqui con la llave grande en NORMAL o DIFICIL:
+            // se dice el rango, pero no el numero (no es una pista).
+            return objeto[3] + " La llave grande gira... pero un teclado pide un numero del 1 al 5.";
+        }
+        if (habitacionActual != 2) {
+            return objeto[3]; // la puerta 1 queda exactamente igual
+        }
+        if (dificultad == 1) {
+            return objeto[3] + " Grabado en la puerta: \"Antes de ir a dormir encendi el fuego,"
+                    + " al final suspire DOS veces\"";
+        }
+        // NORMAL y DIFICIL: el orden de los numeros queda oculto; solo el final se lee.
+        return objeto[3] + " Grabado en la puerta: \"#$=/!#&%$ mensaje corrupto $#&%$&..."
+                + " al final suspire DOS veces\"";
     }
 
     /** El panel con el preview (mini arte) del objeto y la pregunta. */
@@ -625,7 +988,8 @@ public class Main {
      * @return true si el juego termina.
      */
     public static boolean abrirPuerta(String[] objeto) {
-        mostrarEscena(objeto[1], objeto[2], objeto[3]);
+        // textoPuerta() agrega el grabado en la habitacion 2; en la 1 es objeto[3].
+        mostrarEscena(objeto[1], objeto[2], textoPuerta(objeto));
         recordarMirado('P');
         System.out.print(centrar("Clave (solo ENTER para alejarte): ", ANCHO_ESCENA));
         String intento = lector.nextLine().trim();
@@ -697,11 +1061,79 @@ public class Main {
     }
 
     /**
-     * La pista que toca segun el estado del juego (tecla H).
-     * TODO equipo: pistas propias para las habitaciones 2 y 3, y limite
-     * de pistas segun la dificultad.
+     * La pista que toca segun el estado del juego (tecla H). Cada habitacion
+     * tiene sus propias pistas: aqui solo se decide cual metodo responde.
+     *
+     * @return el texto de la pista para la variable mensaje.
      */
     public static String darPista() {
+        if (habitacionActual == 2) {
+            return pistaHabitacion2();
+        }
+        if (habitacionActual == 3) {
+            return pistaHabitacion3();
+        }
+        return pistaHabitacion1();
+    }
+
+    /**
+     * Las pistas escalonadas de la habitacion 2: se revisa el inventario en
+     * el orden del puzzle y se responde el primer paso que falta.
+     *
+     * @return el texto de la pista.
+     */
+    public static String pistaHabitacion2() {
+        if (mirados.length() == 0) {
+            return "PISTA: parece un dormitorio. Mira cada mueble de cerca.";
+        }
+        if (!tieneObjeto("pelota de la cama")) {
+            return "PISTA: alguien durmio aqui hace poco. Revisa bien la cama.";
+        }
+        if (!tieneObjeto("balde con agua")) {
+            return "PISTA: la chimenea quema demasiado. Busca algo con que apagarla.";
+        }
+        if (!tieneObjeto("pelota de la chimenea")) {
+            return "PISTA: ya tienes agua. Usala en lo que arde.";
+        }
+        if (mirados.indexOf('P') < 0) {
+            return "PISTA: tienes dos numeros. Lee lo que esta grabado en la puerta.";
+        }
+        // La ultima pista nunca dice el orden de las pelotas: eso lo descubre el jugador.
+        if (dificultad == 1) {
+            return "PISTA: el grabado cuenta una historia. Sigue sus pasos en orden.";
+        }
+        return "PISTA: el grabado esta corrupto, pero el final se lee claro. Piensa en el orden.";
+    }
+
+    /**
+     * Las pistas escalonadas de la habitacion 3: reloj, planta, armario y
+     * puerta, en ese orden.
+     *
+     * @return el texto de la pista.
+     */
+    public static String pistaHabitacion3() {
+        if (mirados.indexOf('R') < 0 && !tieneObjeto("llave pequena")) {
+            return "PISTA: el tiempo importa aqui. Mira el reloj de cerca.";
+        }
+        if (!tieneObjeto("llave pequena")) {
+            return "PISTA: a las 6 las agujas apuntan hacia ABAJO. Que hay debajo del reloj?";
+        }
+        if (!tieneObjeto("llave grande")) {
+            return "PISTA: una llave pequena abre algo grande donde se guardan cosas.";
+        }
+        if (dificultad == 1) {
+            return "PISTA: con la llave grande ya puedes abrir la puerta final.";
+        }
+        return "PISTA: la puerta pide un numero del 1 al 5. Fallar no tiene castigo.";
+    }
+
+    /**
+     * Las pistas originales de la habitacion 1 (sin cambios): ahora solo se
+     * usan cuando el jugador esta en la habitacion 1.
+     *
+     * @return el texto de la pista.
+     */
+    public static String pistaHabitacion1() {
         if (mirados.length() == 0) {
             return "PISTA: los objetos guardan secretos. Camina hacia uno y miralo de cerca.";
         }
