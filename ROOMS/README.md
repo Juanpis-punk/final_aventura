@@ -299,7 +299,7 @@ que dependen de la dificultad.
 - **Colores ANSI**: pistas en amarillo, peligro en rojo, victoria en verde.
 - **Banda sonora propia** por habitación.
 - **🥚 Easter egg (+10%)**: programen la tecla secreta `X` en `easterEgg()`.
-- **Más pistas**: nuevos `if` en `darPista()` por habitación
+- **Más pistas**: nuevos `if` en `darPista()` por habitación.
 
 ## La documentación (JavaDoc) 📚
 
@@ -364,6 +364,6 @@ Las reglas:
 - El trabajo en equipo, el uso de la IA y la autoría se rigen por el
   [Código de Ética del curso](https://www.xacarana.com/cursos/codigo_etica.html)
   (ver también "Las reglas de oro").
-- Un método hace una sola cosa y la hace bien.
+- Un método hace una sola cosa y la hace bien
 
 ¡Suerte! Y recuerden: la habitación siempre tiene salida… si la programan. 🎮
