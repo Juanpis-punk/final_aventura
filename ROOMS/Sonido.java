@@ -78,7 +78,7 @@ public class Sonido {
 
     /**
      * Toca las notas del arreglo, una tras otra, si hay audio y los
-     * efectos estan activados
+     * efectos estan activados.
      *
      * @param notas      las notas MIDI (60 = Do central; +12 por octava).
      * @param duracionMs cuanto dura cada nota, en milisegundos.

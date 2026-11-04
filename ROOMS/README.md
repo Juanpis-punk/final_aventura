@@ -142,7 +142,7 @@ los diseñan y programan ustedes.**
   responde la pista que toca. Agreguen las de sus habitaciones.
 - **`M` y `E` — sonido 🔊**: música y efectos, dos banderas `boolean`.
 - **`X` — la tecla secreta 🥚**: conectada a `easterEgg()`, que no hace nada…
-  todavía. Programarla es bonus (+10%).
+  todavía. Programarla es bonus (+10%)
 
 ## El sonido (MIDI) 🔊
 
