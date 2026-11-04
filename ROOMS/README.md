@@ -202,7 +202,7 @@ Dos tipos de marcas los guían por el código (búsquenlas en VS Code con
    programarlo para ganar**. El inventario se conserva entre habitaciones —
    úsenlo para que un objeto de la 1 sirva en la 3.
 
-Al final del recorrido: la puerta de la habitación 3 muestra la victoria
+Al final del recorrido: la puerta de la habitación 3 muestra la victoria.
 
 ### Las reglas de oro
 

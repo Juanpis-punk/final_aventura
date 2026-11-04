@@ -74,7 +74,7 @@ public class Sonido {
 
     /** La fanfarria del final del juego. */
     public static void victoria() { tocar(new int[] {60, 64, 67, 72, 71, 72}, 150); }
-    // TODO equipo: agreguen aqui sus propios efectos.
+    // TODO equipo: agreguen aqui sus propios efectos
 
     /**
      * Toca las notas del arreglo, una tras otra, si hay audio y los
