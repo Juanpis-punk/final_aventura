@@ -94,7 +94,7 @@ letra = la zona de un objeto (esto es lo que el motor consulta para moverse):
 - La `@` en la matriz visual marca dónde arranca el jugador (el motor la
   encuentra y la borra del dibujo; su casilla en zonas debe ser `.`).
 - 💡 **Truco para que siempre calcen**: copien la matriz visual, renómbrenla y
-  reemplacen cada dibujo por su letra y el interior por puntos
+  reemplacen cada dibujo por su letra y el interior por puntos.
 
 ## Cómo se juega (3 pantallas, todo por teclado)
 
