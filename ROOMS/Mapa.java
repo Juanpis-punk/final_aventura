@@ -62,7 +62,7 @@ public class Mapa {
     /**
      * Dibuja la matriz en consola: @ el jugador, x casilla ya visitada,
      * . casilla sin explorar. La brujula de la derecha recuerda hacia
-     * donde mueve cada tecla.
+     * donde mueve cada tecla
      */
     public static void dibujarMapa() {
         System.out.println();
