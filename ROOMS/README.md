@@ -212,7 +212,7 @@ Al final del recorrido: la puerta de la habitación 3 muestra la victoria.
   textos y melodías propias — su juego debe reflejar las decisiones e ideas de
   su equipo. El trabajo se rige por el
   [Código de Ética del curso](https://www.xacarana.com/cursos/codigo_etica.html):
-  entreguen solo lo que puedan explicar
+  entreguen solo lo que puedan explicar.
 
 ## El mapa del código 🗺️
 
@@ -299,7 +299,7 @@ que dependen de la dificultad.
 - **Colores ANSI**: pistas en amarillo, peligro en rojo, victoria en verde.
 - **Banda sonora propia** por habitación.
 - **🥚 Easter egg (+10%)**: programen la tecla secreta `X` en `easterEgg()`.
-- **Más pistas**: nuevos `if` en `darPista()` por habitación.
+- **Más pistas**: nuevos `if` en `darPista()` por habitación
 
 ## La documentación (JavaDoc) 📚
 
