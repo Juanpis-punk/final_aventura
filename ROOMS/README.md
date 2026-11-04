@@ -5,7 +5,7 @@ Es un juego de "salir de la habitación" en consola… pero el juego completo so
 **TRES habitaciones**. La habitación 1 ya funciona de punta a punta y es igual
 para todos los grupos. Las habitaciones 2 y 3 **las construye el equipo
 programando**: el motor ya llama a los métodos *placeholder* que ustedes deben
-completar — sin programarlos, **es imposible llegar al final del juego**.
+completar — sin programarlos, **es imposible llegar al final del juego**
 
 ## Contenido
 
@@ -364,6 +364,6 @@ Las reglas:
 - El trabajo en equipo, el uso de la IA y la autoría se rigen por el
   [Código de Ética del curso](https://www.xacarana.com/cursos/codigo_etica.html)
   (ver también "Las reglas de oro").
-- Un método hace una sola cosa y la hace bien
+- Un método hace una sola cosa y la hace bien.
 
 ¡Suerte! Y recuerden: la habitación siempre tiene salida… si la programan. 🎮
