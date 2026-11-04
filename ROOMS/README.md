@@ -5,7 +5,7 @@ Es un juego de "salir de la habitación" en consola… pero el juego completo so
 **TRES habitaciones**. La habitación 1 ya funciona de punta a punta y es igual
 para todos los grupos. Las habitaciones 2 y 3 **las construye el equipo
 programando**: el motor ya llama a los métodos *placeholder* que ustedes deben
-completar — sin programarlos, **es imposible llegar al final del juego**
+completar — sin programarlos, **es imposible llegar al final del juego**.
 
 ## Contenido
 
@@ -170,7 +170,7 @@ simbolo,nombre,archivo,detalle
   `arte/<archivo>.txt`.
 - `detalle`: el texto de la escena (ahí van las pistas).
 
-⚠️ Sin comas dentro de los textos (`split(",")`) y sin tildes ni eñes.
+⚠️ Sin comas dentro de los textos (`split(",")`) y sin tildes ni eñes
 
 ## Así se trabaja: PLACEHOLDERs y TODOs
 
