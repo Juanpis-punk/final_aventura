@@ -142,7 +142,7 @@ los diseñan y programan ustedes.**
   responde la pista que toca. Agreguen las de sus habitaciones.
 - **`M` y `E` — sonido 🔊**: música y efectos, dos banderas `boolean`.
 - **`X` — la tecla secreta 🥚**: conectada a `easterEgg()`, que no hace nada…
-  todavía. Programarla es bonus (+10%)
+  todavía. Programarla es bonus (+10%).
 
 ## El sonido (MIDI) 🔊
 
@@ -212,7 +212,7 @@ Al final del recorrido: la puerta de la habitación 3 muestra la victoria.
   textos y melodías propias — su juego debe reflejar las decisiones e ideas de
   su equipo. El trabajo se rige por el
   [Código de Ética del curso](https://www.xacarana.com/cursos/codigo_etica.html):
-  entreguen solo lo que puedan explicar.
+  entreguen solo lo que puedan explicar
 
 ## El mapa del código 🗺️
 
