@@ -149,12 +149,26 @@ public class Main {
      */
     public static void main(String[] args) {
         Sonido.iniciar();
+        Sonido.musicaFondo("musica/intro.mid");
 
         // ---- Configuracion inicial: aqui viven 3 de los placeholders ----
-        configurarArte();
+        configurarArte(0);
         tipoJuego = seleccionarTipoJuego();
         configurarJugador();
 
+        Sonido.detenerMusica();
+        limpiarPantalla();
+        Sonido.musicaFondo("musica/ambiente.mid");
+        for (int i = 0; i < 10; i++) {
+            System.out.println(""); // vacio 
+        }
+        configurarArte(1); // el prologo de la habitacion 1
+        System.out.print(centrar("[ ENTER para continuar ]", ANCHO_ESCENA));
+        lector.nextLine(); // pausa con ENTER para que el jugador lea el prologo
+        for (int i = 0; i < 10; i++) {
+            System.out.println(""); // vacio 
+        }
+        limpiarPantalla();
         // En HABITACION UNICA seleccionarTipoJuego() ya cambio habitacionActual;
         // en los otros modos sigue en 1.
         if (!cargarMundo(habitacionActual)) {
@@ -163,7 +177,7 @@ public class Main {
         if (habitacionActual > 1) {
             mensaje = mensajeEntrada();
         }
-        Sonido.musicaFondo("musica/ambiente.mid");
+       
 
         boolean escapo = false;
         boolean sinMovimientos = false; // solo pasa en CONTRARRELOJ
@@ -294,12 +308,12 @@ public class Main {
     public static void mostrarDificultades() {
         System.out.println();
         System.out.println(" Elige la dificultad (afecta las habitaciones 2 y 3):");
-        System.out.println("   1. FACIL   - la puerta 2 trae una pista clara y la puerta 3");
-        System.out.println("                se abre solo con la llave.");
-        System.out.println("   2. NORMAL  - la pista de la puerta 2 esta corrupta y la");
-        System.out.println("                puerta 3 tambien pide un numero secreto.");
-        System.out.println("   3. DIFICIL - igual que NORMAL, pero con los controles");
-        System.out.println("                invertidos en las habitaciones 2 y 3.");
+        System.out.println("   1. FACIL   - Habitaciones faciles y pistas completas");
+        System.out.println("");
+        System.out.println("   2. NORMAL  - Pistas distorsionadas");
+        System.out.println("");
+        System.out.println("   3. DIFICIL - Pistas distorsionadas y controles invertidos ");
+        System.out.println(""); 
     }
 
     /**
@@ -346,9 +360,38 @@ public class Main {
      * arte distinto al entrar a la 2 y a la 3). Hoy solo imprime el titulo
      * generico del profesor.</p>
      */
-    public static void configurarArte() {
-        // TODO equipo: titulo propio y arte por habitacion/dificultad.
-        imprimirArte("arte/titulo.txt");
+    public static void configurarArte(int x) {
+
+        if (x == 0) {
+            imprimirArte("arte/titulo.txt");
+        } else if (x == 1) {
+            System.out.println("Despierta, " + nombreJugador + ". Estas encerrado en una habitacion desconocida, y una voz misteriosa te dice: ");
+            imprimirArte("arte/prologo.txt");
+        } else if (x == 2) {
+            limpiarPantalla();
+            Sonido.alternarMusica();
+            imprimirArte("arte/scream.txt");
+            Sonido.screamer();
+            System.out.println("...");
+            lector.nextLine();
+            Sonido.alternarMusica();
+            limpiarPantalla();
+
+        } else if (x == 3) {
+            limpiarPantalla();
+            Sonido.alternarMusica();
+            imprimirArte("arte/scream2.txt");
+            Sonido.screamer();
+            System.out.println("...");
+            lector.nextLine();
+            Sonido.alternarMusica();
+            limpiarPantalla();
+        } else {
+            System.out.println("????");
+        }
+        
+        
+        
         System.out.println();
     }
 
@@ -373,7 +416,12 @@ public class Main {
         // Se guarda de donde viene el jugador ANTES de sumar, para la transicion.
         int anterior = habitacionActual;
         habitacionActual++;
-
+        if (habitacionActual == 2) {
+            configurarArte(2);
+        }
+        else if (habitacionActual == 3) {
+            configurarArte(3);
+        }
         // cargarMundo() reemplaza las matrices, los objetos y sortea el puzzle
         // nuevo. El inventario NO se toca: lo que el jugador carga viaja con el.
         if (!cargarMundo(habitacionActual)) {
@@ -535,7 +583,7 @@ public class Main {
      */
     public static void dibujarPantalla(String[] panel) {
         System.out.println();
-        System.out.println(" +============ ESCAPE: LA HABITACION ============+");
+        System.out.println(" +========SALTE DE MI CASAA!!========+");
         System.out.println();
         int total = Math.max(visual.length, panel.length);
         for (int i = 0; i < total; i++) {
@@ -617,16 +665,22 @@ public class Main {
         int nuevaFila = fila;
         int nuevaColumna = columna;
         if (comando.equals("W")) {
-            nuevaFila--;        // arriba = una fila menos
+            nuevaFila--;
+            limpiarPantalla();        // arriba = una fila menos
         } else if (comando.equals("S")) {
-            nuevaFila++;        // abajo = una fila mas
+            nuevaFila++;
+            limpiarPantalla();        // abajo = una fila mas
         } else if (comando.equals("D")) {
-            nuevaColumna++;     // derecha = una columna mas
+            nuevaColumna++;
+            limpiarPantalla();         // derecha = una columna mas
         } else if (comando.equals("A")) {
-            nuevaColumna--;     // izquierda = una columna menos
+            nuevaColumna--; 
+            limpiarPantalla();        // izquierda = una columna menos
         } else {
             mensaje = "No entiendo '" + comando + "'. Usa W A S D (H = pista, Q = rendirse).";
+            limpiarPantalla();
             return false;
+
         }
 
         // En CONTRARRELOJ cada tecla de movimiento gasta uno, incluso si
@@ -705,7 +759,9 @@ public class Main {
         int opcion = leerOpcion();
         if (opcion == 2) {
             mensaje = "Decides seguir explorando.";
+            limpiarPantalla();
             return false;
+            
         }
 
         // COMPORTAMIENTOS ESPECIALES por objeto van aqui.
@@ -1020,6 +1076,7 @@ public class Main {
         System.out.println(centrar("[ ENTER para volver a la habitacion ]", ANCHO_ESCENA));
         System.out.println(bordeEscena());
         lector.nextLine();
+        limpiarPantalla();
     }
 
     /**
@@ -1099,7 +1156,7 @@ public class Main {
         System.out.println(bordeEscena());
         Sonido.detenerMusica();
         Sonido.victoria();
-        System.out.println(centrar("[ ENTER para salir ]", ANCHO_ESCENA));
+        System.out.println(centrar("[CONTROL + C para salir]", ANCHO_ESCENA));
         lector.nextLine();
         // TODO equipo: resumen final (movimientos gastados, objetos mirados).
     }
@@ -1358,6 +1415,11 @@ public class Main {
         }
         return lineas;
     }
+
+    public static void limpiarPantalla() {
+    System.out.print("\033[H\033[2J\033[3J");
+    System.out.flush();
+}
 
     /* ==================== ENTRADA Y ARCHIVOS ==================== */
 
