@@ -1339,11 +1339,13 @@ public class Main {
         if (simboloJugador == '@') {
             // La nota se escribe con su escape Unicode para que el archivo
             // fuente no dependa de la codificacion del editor.
-            simboloJugador = '♫';
-            mensaje = "Parece que ahora tu también haces parte del soundtrack";
+            simboloJugador = '■';
+            mensaje = "Minecraft?";
+            limpiarPantalla();
         } else {
             simboloJugador = '@';
             mensaje = "Vuelves a ser tu mismo";
+            limpiarPantalla();
         }
     }
 
