@@ -74,7 +74,11 @@ public class Sonido {
 
     /** La fanfarria del final del juego. */
     public static void victoria() { tocar(new int[] {60, 64, 67, 72, 71, 72}, 150); }
-    /*Screamer */
+    /**
+     * El grito del screamer: una rafaga de notas muy rapidas que saltan
+     * entre graves y agudos para que suene caotica y asuste. Se usa en las
+     * transiciones entre habitaciones.
+     */
     public static void screamer() {
     tocar(new int[] {
         12, 96, 13, 48, 47, 48, 12, 84,
@@ -157,10 +161,27 @@ public class Sonido {
         }
     }
 
-    /** Detiene la musica de fondo (se puede reanudar con alternarMusica). */
+    /**
+     * Detiene la musica de fondo sin cambiar la preferencia del jugador
+     * (se puede reanudar con alternarMusica o con reanudarMusica).
+     */
     public static void detenerMusica() {
         if (secuenciador != null) {
             secuenciador.stop();
+        }
+    }
+
+    /**
+     * Vuelve a arrancar la musica de fondo donde iba, despues de una pausa
+     * temporal (por ejemplo un screamer). A diferencia de alternarMusica(),
+     * NO cambia la bandera musicaActiva: la preferencia del jugador (tecla M)
+     * se respeta siempre.
+     */
+    public static void reanudarMusica() {
+        // Solo se reanuda si el jugador quiere musica y si alguna vez sono:
+        // sin secuenciador no hay nada que continuar.
+        if (musicaActiva && secuenciador != null) {
+            secuenciador.start();
         }
     }
 

@@ -73,6 +73,13 @@ public class Main {
     /** La columna de la matriz donde esta parado el jugador. */
     public static int columna;
 
+    /**
+     * El caracter con el que se DIBUJA al jugador en el mapa. Empieza en
+     * '@' y el easter egg (tecla X) lo alterna con la nota musical.
+     * Solo cambia el dibujo: el inicio se sigue buscando con la '@' del txt.
+     */
+    public static char simboloJugador = '@';
+
     /** El mensaje que se muestra bajo el mapa en cada turno. */
     public static String mensaje = "Despiertas encerrado y no recuerdas nada. Explora.";
 
@@ -231,11 +238,18 @@ public class Main {
     /**
      * PLACEHOLDER 1 - EL TIPO DE JUEGO.
      *
-     * <p>Debe mostrar un menu inicial y leer la opcion del jugador (validada,
-     * como leerOpcion()). Modos sugeridos: 1 = HISTORIA (las 3 habitaciones),
-     * 2 = HABITACION UNICA (elegir cual y escapar solo de esa),
-     * 3 = CONTRARRELOJ (historia con movimientos limitados). El modo elegido
-     * se guarda en tipoJuego y el resto del motor debe respetarlo.</p>
+     * <p>Muestra el menu inicial con los tres modos y lee la opcion con
+     * leerTresOpciones(), que repite la pregunta hasta recibir 1, 2 o 3:</p>
+     * <ol>
+     *   <li><b>HISTORIA</b> - las 3 habitaciones, una tras otra.</li>
+     *   <li><b>HABITACION UNICA</b> - se pregunta tambien cual habitacion
+     *       (otra vez validada con leerTresOpciones()) y se guarda en
+     *       habitacionActual; al escapar de ella se gana.</li>
+     *   <li><b>CONTRARRELOJ</b> - la historia completa, pero con
+     *       MOVIMIENTOS_POR_HABITACION movimientos en cada habitacion.</li>
+     * </ol>
+     * <p>main() guarda el resultado en tipoJuego y el resto del motor lo
+     * respeta (abrirPuerta(), mover() y panelEstado()).</p>
      *
      * @return el modo elegido: 1 = historia, 2 = habitacion unica, 3 = contrarreloj.
      */
@@ -276,12 +290,18 @@ public class Main {
     /**
      * PLACEHOLDER 2 - LA TERMINAL INICIAL DEL JUGADOR.
      *
-     * <p>Debe configurar la partida conversando con el jugador: preguntar su
-     * nombre (guardarlo en nombreJugador y usarlo en los mensajes del juego),
-     * elegir la dificultad 1-3 (guardarla en dificultad) y aplicarla: por
-     * ejemplo en FACIL hay pistas ilimitadas, en NORMAL cuestan y en DIFICIL
-     * la puerta admite maximo 3 intentos de clave. Tambien pueden ofrecer
-     * aqui el estado inicial del sonido (M/E).</p>
+     * <p>Configura la partida conversando con el jugador:</p>
+     * <ul>
+     *   <li><b>Nombre</b>: se guarda en nombreJugador y se usa en el prologo,
+     *       el panel, las transiciones y la victoria. Si el jugador solo
+     *       presiona ENTER se conserva "aventurero".</li>
+     *   <li><b>Dificultad 1-3</b>: se explica con mostrarDificultades(), se
+     *       lee validada con leerTresOpciones() y se guarda en dificultad.</li>
+     * </ul>
+     * <p>La dificultad solo se aplica en las habitaciones 2 y 3: en NORMAL y
+     * DIFICIL las pistas del grabado salen distorsionadas y la puerta final
+     * pide un numero; en DIFICIL ademas se invierten los controles. La
+     * habitacion 1 es igual en todas las dificultades.</p>
      */
     public static void configurarJugador() {
         // El nombre: si el jugador solo presiona ENTER se conserva "aventurero",
@@ -354,60 +374,80 @@ public class Main {
     /**
      * PLACEHOLDER 3 - EL ASCII ART DEL JUEGO.
      *
-     * <p>Debe configurar la identidad visual: un titulo propio del equipo
-     * (reemplacen arte/titulo.txt o elijan el archivo segun el tipo de juego
-     * o la dificultad), y la decoracion de cada habitacion (por ejemplo un
-     * arte distinto al entrar a la 2 y a la 3). Hoy solo imprime el titulo
-     * generico del profesor.</p>
+     * <p>Decide que arte se muestra en cada momento de la historia segun el
+     * valor de escena:</p>
+     * <ul>
+     *   <li><b>0</b> - el titulo del juego (arte/titulo.txt), al arrancar.</li>
+     *   <li><b>1</b> - el prologo de la habitacion 1: saluda al jugador por
+     *       su nombre y muestra arte/prologo.txt.</li>
+     *   <li><b>2</b> - el screamer de la transicion a la habitacion 2
+     *       (arte/scream.txt).</li>
+     *   <li><b>3</b> - el screamer de la transicion a la habitacion 3
+     *       (arte/scream2.txt).</li>
+     * </ul>
+     * <p>Cualquier otro valor imprime "????" para que el error se note.</p>
+     *
+     * @param escena que arte mostrar: 0 titulo, 1 prologo, 2 y 3 screamers.
      */
-    public static void configurarArte(int x) {
-
-        if (x == 0) {
+    public static void configurarArte(int escena) {
+        if (escena == 0) {
             imprimirArte("arte/titulo.txt");
-        } else if (x == 1) {
+        } else if (escena == 1) {
             System.out.println("Despierta, " + nombreJugador + ". Estas encerrado en una habitacion desconocida, y una voz misteriosa te dice: ");
             imprimirArte("arte/prologo.txt");
-        } else if (x == 2) {
-            limpiarPantalla();
-            Sonido.alternarMusica();
-            imprimirArte("arte/scream.txt");
-            Sonido.screamer();
-            System.out.println("...");
-            lector.nextLine();
-            Sonido.alternarMusica();
-            limpiarPantalla();
-
-        } else if (x == 3) {
-            limpiarPantalla();
-            Sonido.alternarMusica();
-            imprimirArte("arte/scream2.txt");
-            Sonido.screamer();
-            System.out.println("...");
-            lector.nextLine();
-            Sonido.alternarMusica();
-            limpiarPantalla();
+        } else if (escena == 2) {
+            mostrarScreamer("arte/scream.txt");
+        } else if (escena == 3) {
+            mostrarScreamer("arte/scream2.txt");
         } else {
             System.out.println("????");
         }
-        
-        
-        
         System.out.println();
+    }
+
+    /**
+     * Muestra un screamer: limpia la pantalla, imprime el arte de susto,
+     * toca el grito y espera un ENTER. La musica de fondo se silencia
+     * durante el susto y despues vuelve SOLO si estaba sonando antes; si el
+     * jugador la tenia apagada con la tecla M, sigue apagada.
+     *
+     * @param archivo la ruta del arte del susto, por ejemplo "arte/scream.txt".
+     */
+    public static void mostrarScreamer(String archivo) {
+        // Se guarda la preferencia ANTES del susto. Antes se usaba
+        // alternarMusica(), que cambia la bandera: si el jugador la tenia
+        // apagada, el screamer la prendia. detenerMusica() solo pausa.
+        boolean musicaEstabaActiva = Sonido.musicaActiva;
+        Sonido.detenerMusica();
+
+        limpiarPantalla();
+        imprimirArte(archivo);
+        Sonido.screamer();
+        System.out.println("...");
+        lector.nextLine(); // el jugador se recupera del susto con ENTER
+
+        if (musicaEstabaActiva) {
+            Sonido.reanudarMusica();
+        }
+        limpiarPantalla();
     }
 
     /**
      * PLACEHOLDER 4 - LA NAVEGACION COMPLETA DEL JUEGO.
      *
      * <p>Se llama cuando el jugador abre la puerta de una habitacion que NO
-     * es la ultima. Debe llevarlo a la siguiente: sumar 1 a habitacionActual,
-     * llamar cargarMundo(habitacionActual) con los archivos que ustedes crean
-     * (habitacion2.txt, zonas2.txt, objetos2.csv... y los de la 3), mostrar
-     * una transicion (arte + mensaje) y retornar false para que el ciclo siga
-     * jugando. El inventario se conserva entre habitaciones: usenlo para que
-     * un objeto de la habitacion 1 sirva en la 3.</p>
-     *
-     * <p>Hoy el pasillo esta "en obra": el juego termina aqui. Por eso, sin
-     * programar este metodo, ES IMPOSIBLE llegar al final del juego.</p>
+     * es la ultima. El viaje tiene cuatro pasos:</p>
+     * <ol>
+     *   <li>Suma 1 a habitacionActual (guardando antes de donde viene).</li>
+     *   <li>Muestra el screamer de esa transicion con configurarArte(2) o
+     *       configurarArte(3).</li>
+     *   <li>Carga la habitacion nueva con cargarMundo(): matrices, objetos y
+     *       puzzle nuevos. El inventario NO se borra: viaja con el jugador.</li>
+     *   <li>Muestra la pantalla de transicion con mostrarTransicion() y deja
+     *       el primer mensaje con mensajeEntrada().</li>
+     * </ol>
+     * <p>Si los archivos de la habitacion no cargan, avisa y termina el
+     * juego, porque sin datos no se puede seguir.</p>
      *
      * @return true si el juego debe terminar; false para seguir jugando en la
      *         nueva habitacion.
@@ -595,12 +635,20 @@ public class Main {
         System.out.println(" " + mensaje);
     }
 
-    /** Una fila de la matriz visual como texto, con el jugador (@) encima. */
+    /**
+     * Una fila de la matriz visual como texto, con el jugador encima
+     * (dibujado con simboloJugador).
+     *
+     * @param i el numero de la fila de la matriz visual.
+     * @return la fila lista para imprimir.
+     */
     public static String filaVisual(int i) {
         String linea = "";
         for (int j = 0; j < anchoMapa; j++) {
             if (i == fila && j == columna) {
-                linea = linea + '@';
+                // Se usa la variable y no un '@' fijo para que el easter egg
+                // pueda cambiar como se ve el jugador.
+                linea = linea + simboloJugador;
             } else if (j < visual[i].length) {
                 linea = linea + visual[i][j];
             } else {
@@ -1282,13 +1330,21 @@ public class Main {
     }
 
     /**
-     * EL EASTER EGG (tecla secreta X): el gancho ya esta conectado.
-     * TODO equipo: programen aqui su secreto. Ideas: el modo desarrollador
-     * que imprime la matriz de zonas, un objeto oculto, un mensaje del
-     * creador del cuarto.
+     * EL EASTER EGG (tecla secreta X): alterna el simbolo con el que se
+     * dibuja al jugador entre '@' y la nota musical (U+266B). Cada vez que
+     * se presiona X cambia al otro simbolo y deja un mensaje acorde. No
+     * afecta el movimiento ni los puzzles: solo el dibujo.
      */
     public static void easterEgg() {
-        mensaje = "Presionaste algo extrano... pero nada ocurre. (TODO equipo)";
+        if (simboloJugador == '@') {
+            // La nota se escribe con su escape Unicode para que el archivo
+            // fuente no dependa de la codificacion del editor.
+            simboloJugador = '♫';
+            mensaje = "Parece que ahora tu también haces parte del soundtrack";
+        } else {
+            simboloJugador = '@';
+            mensaje = "Vuelves a ser tu mismo";
+        }
     }
 
     /* ==================== ESTADO DEL JUGADOR ==================== */
@@ -1416,10 +1472,24 @@ public class Main {
         return lineas;
     }
 
+    /**
+     * Limpia la consola con codigos de escape ANSI, para que cada turno se
+     * dibuje sobre una pantalla vacia en vez de acumularse hacia abajo:
+     * <ul>
+     *   <li><code>\033[H</code> - lleva el cursor a la esquina superior
+     *       izquierda (fila 1, columna 1).</li>
+     *   <li><code>\033[2J</code> - borra todo lo visible en la pantalla.</li>
+     *   <li><code>\033[3J</code> - borra tambien el historial (scrollback),
+     *       para que el jugador no vea las pantallas viejas al subir.</li>
+     * </ul>
+     * <p>(\033 es el caracter ESC, el que inicia cada codigo.)</p>
+     */
     public static void limpiarPantalla() {
-    System.out.print("\033[H\033[2J\033[3J");
-    System.out.flush();
-}
+        System.out.print("\033[H\033[2J\033[3J");
+        // flush obliga a enviar los codigos YA; si no, podrian quedarse en
+        // el buffer y la pantalla se limpiaria tarde.
+        System.out.flush();
+    }
 
     /* ==================== ENTRADA Y ARCHIVOS ==================== */
 
