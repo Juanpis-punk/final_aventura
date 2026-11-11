@@ -888,6 +888,7 @@ public class Main {
         }
 
         if (simbolo == 'P') {
+            limpiarPantalla();
             return abrirPuerta(objeto);
         }
         abrirEscena(objeto);
