@@ -127,6 +127,13 @@ public class Sonido {
      */
     public static void musicaFondo(String ruta) {
         rutaMusica = ruta; // se recuerda por si el jugador apaga y prende
+        // Si ya sonaba otra cancion (por ejemplo la intro), se CIERRA su
+        // secuenciador antes de abrir uno nuevo: si solo se perdiera la
+        // referencia, quedaria abierto y el programa nunca terminaria.
+        if (secuenciador != null) {
+            secuenciador.close();
+            secuenciador = null;
+        }
         File archivo = new File(ruta);
         if (!archivo.exists() || !musicaActiva) {
             return;
